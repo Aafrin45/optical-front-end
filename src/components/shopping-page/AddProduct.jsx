@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
+import { message, Input, Form} from 'antd';
 import axios from 'axios';
 
+const { TextArea } = Input;
+
 const AddProduct = () => {
+  const [form] = Form.useForm();
   const [formState, setFormState] = useState({
     productId: '',
     url: '',
@@ -9,22 +13,12 @@ const AddProduct = () => {
     message: '',
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormState((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = async (values) => {
     try {
       const response = await axios.post('http://localhost:5000/api/products', {
-        productId: formState.productId,
-        url: formState.url,
-        price: formState.price,
+        productId: values.productId,
+        url: values.url,
+        price: values.price,
       });
 
       setFormState({
@@ -33,61 +27,75 @@ const AddProduct = () => {
         price: '',
         message: response.data.message,
       });
+      form.resetFields();
+      message.success('Product added successfully');
     } catch (error) {
       setFormState((prevState) => ({
         ...prevState,
         message: 'Error adding product',
       }));
+      message.error('Error adding product');
       console.error(error);
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-6 rounded-lg shadow-md w-80 max-w-sm">
+      <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm md:w-96">
         <h2 className="text-center mb-4 text-gray-800 text-xl">Add Product</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col">
-          <div className="mb-3">
-            <label className="block mb-1 text-gray-600 font-light text-left">Product ID</label>
-            <input
-              type="text"
-              name="productId"
-              value={formState.productId}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-gray-300 rounded-md box-border focus:border-blue-500 focus:outline-none"
-            />
-          </div>
-          <div className="mb-3">
-            <label className="block mb-1 text-gray-600 font-light text-left">URL</label>
-            <input
-              type="text"
-              name="url"
-              value={formState.url}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-gray-300 rounded-md box-border focus:border-blue-500 focus:outline-none"
-            />
-          </div>
-          <div className="mb-3">
-            <label className="block mb-1 text-gray-600 font-light text-left">Price</label>
-            <input
-              type="number"
-              name="price"
-              value={formState.price}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-gray-300 rounded-md box-border focus:border-blue-500 focus:outline-none"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-2/5 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300 ease-in-out mx-auto"
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
+          <Form.Item
+            label="Product Name"
+            name="productId"
+            rules={[{ required: true, message: 'Please enter the product name!' }]}
           >
-            Add Product
-          </button>
-        </form>
-        {formState.message && <p className="text-center mt-2 text-green-600">{formState.message}</p>}
+            <Input
+              value={formState.productId}
+              onChange={(e) => setFormState({ ...formState, productId: e.target.value })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="URL"
+            name="url"
+            rules={[{ required: true, message: 'Please enter the URL!' }]}
+          >
+            <Input
+              type="url"
+              value={formState.url}
+              onChange={(e) => setFormState({ ...formState, url: e.target.value })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Price"
+            name="price"
+            rules={[{ required: true, message: 'Please enter the price!' }]}
+          >
+            <Input
+              type="number"
+              value={formState.price}
+              onChange={(e) => setFormState({ ...formState, price: e.target.value })}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              Add Product
+            </button>
+          </Form.Item>
+        </Form>
+
+        {formState.message && (
+          <p className="text-center mt-2 text-green-600">{formState.message}</p>
+        )}
       </div>
     </div>
   );

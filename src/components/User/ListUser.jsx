@@ -1,61 +1,91 @@
 import React from 'react';
+import { Table, Button, Space, Modal } from 'antd';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'antd/dist/reset.css';
 
-const ListUsers = ({ users = [] }) => {
-  const displayUsers =
-    users.length > 0
-      ? users
-      : [
-          { firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', password: '12345678' },
-          { firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com', password: '12345678' },
-          { firstName: 'Emily', lastName: 'Johnson', email: 'emily.johnson@example.com', password: '12345678' },
-        ];
+const ListUsers = ({ initialUsers = [] }) => {
+  const [users, setUsers] = React.useState(initialUsers);
+
+  const handleEdit = (record) => {
+  };
+
+  const handleDelete = (record) => {
+    Modal.confirm({
+      title: 'Are you sure you want to delete this user?',
+      content: `User: ${record.firstName} ${record.lastName}`,
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk: () => {
+        setUsers(prevUsers => prevUsers.filter(user => user.key !== record.key));
+        console.log('Deleted:', record);
+      },
+    });
+  };
+
+  const columns = [
+    {
+      title: 'First Name',
+      dataIndex: 'firstName',
+      key: 'firstName',
+      align: 'left',
+    },
+    {
+      title: 'Last Name',
+      dataIndex: 'lastName',
+      key: 'lastName',
+      align: 'left',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+      align: 'left',
+    },
+    {
+      title: 'Password',
+      dataIndex: 'password',
+      key: 'password',
+      align: 'left',
+      render: (password) => <span>{password}</span>,
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      align: 'center',
+      render: (_, record) => (
+        <Space size="middle">
+          <Button
+            type="link"
+            icon={<i className="bi bi-pencil-square text-blue-500"></i>}
+            title="Edit"
+            onClick={() => handleEdit(record)}
+          />
+          <Button
+            type="link"
+            icon={<i className="bi bi-trash text-red-500"></i>}
+            title="Delete"
+            onClick={() => handleDelete(record)}
+          />
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen pt-20 bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto bg-white p-4 rounded-md shadow-md">
-        <h2 className="text-center mb-4 text-gray-800 text-xl">User List</h2>
-        {displayUsers.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 bg-white rounded-md shadow-md">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    First Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Last Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Password
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {displayUsers.map((user, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium text-gray-900">
-                      {user.firstName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium text-gray-900">
-                      {user.lastName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-left text-sm text-gray-500">
-                      {user.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-left text-sm text-gray-500">
-                      {user.password}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-center text-gray-500">No users added yet.</p>
-        )}
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-gray-800 text-xl font-semibold">User List</h2>
+          <Button
+            type="primary"
+            onClick={() => console.log('Add User')}
+          >
+            Add User
+          </Button>
+        </div>
+        <Table dataSource={users} columns={columns} rowKey="id" />
       </div>
     </div>
   );

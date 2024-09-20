@@ -1,55 +1,100 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Table, Button, Space, Modal } from 'antd';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'antd/dist/reset.css';
 
-const ListProduct = ({ products = [] }) => {
-  const displayProducts =
-    products.length > 0
-      ? products
-      : [
-          { productId: 'P001', url: 'https://example.com/product1', price: '19.99' },
-          { productId: 'P002', url: 'https://example.com/product2', price: '29.99' },
-          { productId: 'P003', url: 'https://example.com/product3', price: '39.99' },
-        ];
+const ListProduct = ({ initialProducts = [] }) => {
+  const [products, setProducts] = useState(initialProducts.length > 0 ? initialProducts : [
+  ]);
+
+  const handleAddProduct = () => {
+    
+  };
+
+  const handleEdit = (record) => {
+  };
+
+  const handleDelete = (record) => {
+    Modal.confirm({
+      title: 'Are you sure you want to delete this product?',
+      content: `Product: ${record.productName}`,
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk: () => {
+        setProducts(products.filter((product) => product.key !== record.key));
+        console.log('Deleted:', record);
+      },
+    });
+  };
+
+  const columns = [
+    {
+      title: 'Product Name',
+      dataIndex: 'productName',
+      key: 'productName',
+      align: 'left',
+    },
+    {
+      title: 'Product URL',
+      dataIndex: 'url',
+      key: 'url',
+      render: (url) => (
+        <a href={url} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
+          {url}
+        </a>
+      ),
+      align: 'left',
+    },
+    {
+      title: 'Product Price',
+      dataIndex: 'price',
+      key: 'price',
+      render: (price) => <span>${price}</span>,
+      align: 'right',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      align: 'center',
+      render: (_, record) => (
+        <Space size="middle">
+          <Button
+            type="link"
+            icon={<i className="bi bi-pencil-square text-blue-500"></i>}
+            title="Edit"
+            onClick={() => handleEdit(record)}
+          />
+          <Button
+            type="link"
+            icon={<i className="bi bi-trash text-red-500"></i>}
+            title="Delete"
+            onClick={() => handleDelete(record)}
+          />
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen pt-20 bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto bg-white p-4 rounded-md shadow-md">
-        <h2 className="text-center mb-4 text-gray-800 text-xl">Product List</h2>
-        {displayProducts.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 bg-white rounded-md shadow-md">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Product ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                   Product URL
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Product Price
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {displayProducts.map((product, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium text-gray-900">
-                      {product.productId}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-left text-sm text-gray-500">
-                      <a href={product.url} className="text-blue-500 hover:underline">
-                        {product.url}
-                      </a>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-left text-sm text-gray-500">{product.price}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-center text-gray-500">No products added yet.</p>
-        )}
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-gray-800 text-xl">Product List</h2>
+          <Button type="primary" onClick={handleAddProduct}>
+            Add Product
+          </Button>
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={products}
+          rowKey="key"
+          pagination={false}
+          className="rounded-md shadow-md"
+          scroll={{ x: 'max-content' }}
+        />
       </div>
     </div>
   );

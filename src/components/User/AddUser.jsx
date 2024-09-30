@@ -1,16 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Input, Button, message } from 'antd';
 import axios from 'axios';
 
 const AddUser = ({ onAddUser }) => {
   const [form] = Form.useForm();
-  const [formState, setFormState] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    message: '',
-  });
 
   const handleSubmit = async (values) => {
     if (!validateEmail(values.email)) {
@@ -20,32 +13,29 @@ const AddUser = ({ onAddUser }) => {
 
     try {
       const response = await axios.post('http://localhost:5000/api/users', {
-        firstName: values.firstName,
-        lastName: values.lastName,
+        firstname: values.firstname,
+        lastname: values.lastname,
         email: values.email,
         password: values.password,
+      }, {
+        headers: {
+          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFhZnJpbiIsImlhdCI6MTcyNzcwODk0OSwiZXhwIjoxNzI3NzI2OTQ5fQ.zVyYLSOaTP2y0uSxogmIDTlmccmZa0Ns5y8HJ7SGYkw`, 
+        },
       });
 
-      const newUser = response.data;
-
-      onAddUser(newUser);
-
-      setFormState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        message: response.data.message || 'User added successfully',
-      });
+      
       form.resetFields();
       message.success('User added successfully');
+
+      onAddUser(response.data);
+
     } catch (error) {
-      setFormState((prevState) => ({
-        ...prevState,
-        message: 'Error adding user',
-      }));
-      message.error('Error adding user');
-      console.error(error);
+      if (error.response && error.response.status === 409) {
+        message.error('Email is already registered. Please use a different email.');
+      } else {
+        console.error('Error adding user:', error);
+        // message.error('An error occurred while adding the user.');
+      }
     }
   };
 
@@ -62,26 +52,21 @@ const AddUser = ({ onAddUser }) => {
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
-          initialValues={formState}
         >
           <Form.Item
             label="First Name"
-            name="firstName"
+            name="firstname"
             rules={[{ required: true, message: 'Please enter the first name!' }]}
           >
-            <Input
-              placeholder="Enter First Name"
-            />
+            <Input placeholder="Enter First Name" />
           </Form.Item>
 
           <Form.Item
             label="Last Name"
-            name="lastName"
+            name="lastname"
             rules={[{ required: true, message: 'Please enter the last name!' }]}
           >
-            <Input
-              placeholder="Enter Last Name"
-            />
+            <Input placeholder="Enter Last Name" />
           </Form.Item>
 
           <Form.Item
@@ -92,9 +77,7 @@ const AddUser = ({ onAddUser }) => {
               { type: 'email', message: 'Invalid email format' },
             ]}
           >
-            <Input
-              placeholder="Enter Email"
-            />
+            <Input placeholder="Enter Email" />
           </Form.Item>
 
           <Form.Item
@@ -102,25 +85,18 @@ const AddUser = ({ onAddUser }) => {
             name="password"
             rules={[{ required: true, message: 'Please enter the password!' }]}
           >
-            <Input.Password
-              placeholder="Enter Password"
-            />
+            <Input.Password placeholder="Enter Password" />
           </Form.Item>
 
           <Form.Item>
             <Button
               type="primary"
-              htmlType="submit"
-              className="w-full"
+              htmlType="submit" 
+              className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               Add User
-            </Button>
-          </Form.Item>
+            </Button></Form.Item>
         </Form>
-
-        {formState.message && (
-          <p className="text-center mt-2 text-red-600">{formState.message}</p>
-        )}
       </div>
     </div>
   );

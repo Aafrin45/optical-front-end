@@ -1,43 +1,30 @@
-import React, { useState } from 'react';
-import { message, Input, Form} from 'antd';
+import React from 'react';
+import { message, Input,Button, Form } from 'antd';
 import axios from 'axios';
 
-const { TextArea } = Input;
-
-const AddProduct = () => {
+const AddProduct = ({ onProductAdded }) => {
   const [form] = Form.useForm();
-  const [formState, setFormState] = useState({
-    productId: '',
-    url: '',
-    price: '',
-    message: '',
-  });
+  
+        const handleSubmit = async (values) => {
+          try {
+            const response = await axios.post('http://localhost:5000/api/products', {
+              productname: values.productname, 
+              url: values.url,
+              price: values.price,
+            }, { 
+              headers: { 
+                Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFhZnJpbiIsImlhdCI6MTcyNzcwODk0OSwiZXhwIjoxNzI3NzI2OTQ5fQ.zVyYLSOaTP2y0uSxogmIDTlmccmZa0Ns5y8HJ7SGYkw`, 
+              },
+            });
 
-  const handleSubmit = async (values) => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/products', {
-        productId: values.productId,
-        url: values.url,
-        price: values.price,
-      });
-
-      setFormState({
-        productId: '',
-        url: '',
-        price: '',
-        message: response.data.message,
-      });
-      form.resetFields();
-      message.success('Product added successfully');
-    } catch (error) {
-      setFormState((prevState) => ({
-        ...prevState,
-        message: 'Error adding product',
-      }));
-      message.error('Error adding product');
-      console.error(error);
-    }
-  };
+            form.resetFields();
+            message.success('Product added successfully');
+            
+            onProductAdded(response.data);
+          } catch (error) {
+            console.error('Error adding product:', error);
+          }
+        };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -50,13 +37,10 @@ const AddProduct = () => {
         >
           <Form.Item
             label="Product Name"
-            name="productId"
+            name="productname" 
             rules={[{ required: true, message: 'Please enter the product name!' }]}
           >
-            <Input
-              value={formState.productId}
-              onChange={(e) => setFormState({ ...formState, productId: e.target.value })}
-            />
+            <Input />
           </Form.Item>
 
           <Form.Item
@@ -64,11 +48,7 @@ const AddProduct = () => {
             name="url"
             rules={[{ required: true, message: 'Please enter the URL!' }]}
           >
-            <Input
-              type="url"
-              value={formState.url}
-              onChange={(e) => setFormState({ ...formState, url: e.target.value })}
-            />
+            <Input type="url" />
           </Form.Item>
 
           <Form.Item
@@ -76,26 +56,19 @@ const AddProduct = () => {
             name="price"
             rules={[{ required: true, message: 'Please enter the price!' }]}
           >
-            <Input
-              type="number"
-              value={formState.price}
-              onChange={(e) => setFormState({ ...formState, price: e.target.value })}
-            />
+            <Input type="number" />
           </Form.Item>
 
           <Form.Item>
-            <button
-              type="submit"
+            <Button
+              type="primary"
+              htmlType="submit"
               className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               Add Product
-            </button>
+            </Button>
           </Form.Item>
         </Form>
-
-        {formState.message && (
-          <p className="text-center mt-2 text-green-600">{formState.message}</p>
-        )}
       </div>
     </div>
   );
